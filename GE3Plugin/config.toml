@@ -1,0 +1,12 @@
+[General]
+Enable_Console = true	#Enables showing the console
+
+[AQLLog]
+#AQL Log is used by the game to record debug info and track things that are happening
+Enable_AQLLog = false	#Outputs AQL Log to the console
+Enable_AQLFile = true	#Writes AQL log to a file
+
+[ModLoader]
+Enable_Mods = true		#Enables file redirect to mods folder 
+ModsPath = "mods"		#Mods folder name to redirect too, must be in "GOD EATER 3" with the exe
+DDSLoad = true			#Allows texture ".mds" calls to be redirected to ".dds" files instead
