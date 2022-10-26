@@ -71,15 +71,12 @@ HOOK(void, __stdcall, hook_LoaderFunc, LoaderFunction, uint64_t* param1, uint64_
     char* filename = (char*)((uint64_t)param2 + 0xe);
 
     char finalpath[0x100];
-    strcpy(finalpath, config::ModsPath.c_str());
-    strcat(finalpath, "/");
-    strcat(finalpath, filename);
+    strcpy_s(finalpath, config::ModsPath.c_str());
+    strcat_s(finalpath, "/");
+    strcat_s(finalpath, filename);
     //printf("[Debug Logger] modspath %s\r\n", finalpath);
 
-    std::filesystem::path diskPath = finalpath;
-    diskPath = diskPath.make_preferred();
-
-    if (std::filesystem::exists(diskPath))
+    if (std::filesystem::exists(finalpath))
     {
         memcpy(filename, finalpath, strlen(finalpath)+1);
         printf("[ModLoader] Replaced file call %s\r\n", finalpath);
@@ -94,11 +91,9 @@ HOOK(void, __stdcall, hook_LoaderFunc, LoaderFunction, uint64_t* param1, uint64_
         while ((index = s.find(mds)) != std::string::npos)
             s.replace(index, dds.length(), dds);
 
-        strcpy(finalpath, s.c_str());
-        diskPath = finalpath;
-        diskPath = diskPath.make_preferred();
+        strcpy_s(finalpath, s.c_str());
 
-        if (std::filesystem::exists(diskPath))
+        if (std::filesystem::exists(finalpath))
         {
             memcpy(filename, finalpath, strlen(finalpath) + 1);
             printf("[ModLoader] Replaced file call %s\r\n", finalpath);
