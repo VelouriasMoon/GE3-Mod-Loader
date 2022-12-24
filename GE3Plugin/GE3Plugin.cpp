@@ -45,6 +45,11 @@ void* LoaderFunction = sigScan(
     "\x48\x8B\xC4\x55\x57\x41\x54\x41\x56\x41\x57\x48\x8D\xA8\x2A\x2A\x2A\x2A\x48\x81\xEC\x90\x02\x00\x00\x48\xC7\x44\x24\x2A\xFE\xFF\xFF\xFF\x48\x89\x58\x2A\x48\x89\x70\x2A\x48\x8B\x05\x2A\x2A\x2A\x2A\x48\x33\xC4\x48\x89\x85\x2A\x2A\x2A\x2A\x4C\x8B\xFA",
     "xxxxxxxxxxxxxx????xxxxxxxxxxx?xxxxxxx?xxx?xxx????xxxxxx????xxx");
 
+//0x140c72b40
+void* SetRandomSeed = sigScan(
+    "\xB8\xFF\x7F\x00\x00\x3B\xC8",
+    "xxxxxxx");
+
 #pragma endregion
 
 #pragma region Hooks
@@ -114,6 +119,12 @@ HOOK(void, __stdcall, hook_LoaderFunc, LoaderFunction, uint64_t* param1, uint64_
     return orig_hook_LoaderFunc(param1, param2);
 }
 
+HOOK(void, __stdcall, hook_SetRandomSeed, SetRandomSeed, u32 seed) 
+{
+    printf("[GE3PluginLog] Replacing Random Seed with 0\r\n");
+    return orig_hook_SetRandomSeed(0);
+}
+
 #pragma endregion
 
 BOOL APIENTRY DllMain(HMODULE hModule,
@@ -144,6 +155,11 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         if (LoaderFunction && config::enableMods) {
             printf("[SigScan Logger] 0x%p : Loader::LoadFile\r\n", LoaderFunction);
             INSTALL_HOOK(hook_LoaderFunc);
+        }
+
+        if (SetRandomSeed && config::RemoveRandomSeed) {
+            printf("[SigScan Logger] 0x%9 : ASLR::SetRandomSeend\r\n", SetRandomSeed);
+            INSTALL_HOOK(hook_SetRandomSeed)
         }
         
 

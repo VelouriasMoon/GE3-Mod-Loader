@@ -7,6 +7,7 @@ bool config::enableAQLFile;
 bool config::enableMods;
 bool config::enableDDSLoad;
 std::string config::ModsPath;
+bool config::RemoveRandomSeed;
 
 bool config::init()
 {
@@ -30,6 +31,7 @@ bool config::init()
     }
 
     enableConsole = config["General"]["Enable_Console"].value_or(true);
+    RemoveRandomSeed = config["General"]["Remove_RandomSeed"].value_or(true);
 
     enableAQLLog = config["AQLLog"]["Enable_AQLLog"].value_or(false);
     enableAQLFile = config["AQLLog"]["Enable_AQLFile"].value_or(false);

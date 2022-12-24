@@ -11,6 +11,7 @@ public:
 	static bool enableMods;
 	static bool enableDDSLoad;
 	static std::string ModsPath;
+	static bool RemoveRandomSeed;
 
 	static bool init();
 };
