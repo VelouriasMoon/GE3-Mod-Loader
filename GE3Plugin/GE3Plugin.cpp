@@ -10,6 +10,8 @@
 #include "Config.h"
 #include "structs.h"
 
+#pragma region Functions
+
 void WriteToLog(const std::string& text)
 {
     std::ofstream log_file("plugins\\AQLLog.log", std::ios_base::out | std::ios_base::app);
@@ -27,6 +29,96 @@ bool FileExists(char* path)
     return false;
 }
 
+void SimpleFileLoader(char* filename)
+{
+    char* finalpath = new char[0x100];
+    strcpy(finalpath, config::ModsPath.c_str());
+    strcat(finalpath, "/");
+    strcat(finalpath, filename);
+    //printf("[Debug Logger] modspath %s\r\n", finalpath);
+
+    if (FileExists(finalpath))
+    {
+        memcpy(filename, finalpath, strlen(finalpath) + 1);
+        printf("[ModLoader] Replaced file call %s\r\n", finalpath);
+    }
+    else if (config::enableDDSLoad)
+    {
+        std::string s(finalpath);
+        std::string mds = ".mds";
+        std::string dds = ".dds";
+
+        std::size_t index;
+        while ((index = s.find(mds)) != std::string::npos)
+            s.replace(index, dds.length(), dds);
+
+        strcpy(finalpath, s.c_str());
+
+        if (FileExists(finalpath))
+        {
+            memcpy(filename, finalpath, strlen(finalpath) + 1);
+            printf("[ModLoader] Replaced file call %s\r\n", finalpath);
+        }
+    }
+    return;
+}
+
+void AdvanceFileLoader(char* filename)
+{
+    char* finalpath = new char[0x100];
+    strcpy(finalpath, config::ModsPath.c_str());
+    strcat(finalpath, "\\*");
+
+    WIN32_FIND_DATAA FindFileData;
+    HANDLE hFind = FindFirstFileA(finalpath, &FindFileData);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        printf("[GE3PluginLog] Failed to find files in Mods directory.\r\n");
+        return;
+    }
+
+    do {
+        if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+            strcpy(finalpath, config::ModsPath.c_str());
+            strcat(finalpath, "/");
+            strcat(finalpath, FindFileData.cFileName);
+            strcat(finalpath, "/");
+            strcat(finalpath, filename);
+            //printf("[Debug Logger] modspath %s\r\n", finalpath);
+
+            if (FileExists(finalpath))
+            {
+                memcpy(filename, finalpath, strlen(finalpath) + 1);
+                printf("[ModLoader] Replaced file call %s\r\n", finalpath);
+                break;
+            }
+            else if (config::enableDDSLoad)
+            {
+                std::string s(finalpath);
+                std::string mds = ".mds";
+                std::string dds = ".dds";
+
+                std::size_t index;
+                while ((index = s.find(mds)) != std::string::npos)
+                    s.replace(index, dds.length(), dds);
+
+                strcpy(finalpath, s.c_str());
+
+                if (FileExists(finalpath))
+                {
+                    memcpy(filename, finalpath, strlen(finalpath) + 1);
+                    printf("[ModLoader] Replaced file call %s\r\n", finalpath);
+                    break;
+                }
+            }
+        }
+    } while (FindNextFileA(hFind, &FindFileData) != 0);
+    FindClose(hFind);
+    return;
+}
+
+#pragma endregion
+
 #pragma region Sigs
 
 void* LoadPack = sigScan(
@@ -37,10 +129,12 @@ void* CreateFileGE3 = sigScan(
     "\x48\x89\x5C\x24\x2A\x48\x89\x6C\x24\x2A\x48\x89\x74\x24\x2A\x57\x48\x81\xEC\x60\x04\x00\x00",
     "xxxx?xxxx?xxxx?xxxxxxxx");
 
+//0x140c93060
 void* AQLLog = sigScan(
     "\x40\x57\x48\x83\xEC\x30\x48\xC7\x44\x24\x2A\xFE\xFF\xFF\xFF\x48\x89\x5C\x24\x2A\x48\x89\x74\x24\x2A\x48\x8B\xD9\x48\x8D\x35\x2A\x2A\x2A\x2A",
     "xxxxxxxxxx?xxxxxxxx?xxxx?xxxxxx????");
 
+//0x140d75510
 void* LoaderFunction = sigScan(
     "\x48\x8B\xC4\x55\x57\x41\x54\x41\x56\x41\x57\x48\x8D\xA8\x2A\x2A\x2A\x2A\x48\x81\xEC\x90\x02\x00\x00\x48\xC7\x44\x24\x2A\xFE\xFF\xFF\xFF\x48\x89\x58\x2A\x48\x89\x70\x2A\x48\x8B\x05\x2A\x2A\x2A\x2A\x48\x33\xC4\x48\x89\x85\x2A\x2A\x2A\x2A\x4C\x8B\xFA",
     "xxxxxxxxxxxxxx????xxxxxxxxxxx?xxxxxxx?xxx?xxx????xxxxxx????xxx");
@@ -62,14 +156,14 @@ HOOK(void, __stdcall, hook_PackRead, LoadPack, uint16_t* param1)
 
 HOOK(void, __stdcall, hook_CreateFileGE3, CreateFileGE3, LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE  hTemplateFile)
 {
-    printf("File Access Log: %hS\r\n", lpFileName);
+    printf("[File Access Log] %hS\r\n", lpFileName);
     return orig_hook_CreateFileGE3(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 }
 
 HOOK(void, __stdcall, hook_AQLLog, AQLLog, char* str)
 {
     if (config::enableAQLLog)
-        printf("AQL Log: %hS", str);
+        printf("[AQL Log] %hS", str);
     if(config::enableAQLFile)
         WriteToLog(str);
     return orig_hook_AQLLog(str);
@@ -87,35 +181,11 @@ HOOK(void, __stdcall, hook_LoaderFunc, LoaderFunction, uint64_t* param1, uint64_
 {
     char* filename = (char*)((uint64_t)param2 + 0xe);
 
-    char* finalpath = new char[0x100];
-    strcpy(finalpath, config::ModsPath.c_str());
-    strcat(finalpath, "/");
-    strcat(finalpath, filename);
-    //printf("[Debug Logger] modspath %s\r\n", finalpath);
-
-    if (FileExists(finalpath))
-    {
-        memcpy(filename, finalpath, strlen(finalpath)+1);
-        printf("[ModLoader] Replaced file call %s\r\n", finalpath);
-    }
-    else if (config::enableDDSLoad)
-    {
-        std::string s(finalpath);
-        std::string mds = ".mds";
-        std::string dds = ".dds";
-
-        std::size_t index;
-        while ((index = s.find(mds)) != std::string::npos)
-            s.replace(index, dds.length(), dds);
-
-        strcpy(finalpath, s.c_str());
-
-        if (FileExists(finalpath))
-        {
-            memcpy(filename, finalpath, strlen(finalpath) + 1);
-            printf("[ModLoader] Replaced file call %s\r\n", finalpath);
-        }
-    }
+    if (config::ModSubFolders)
+        AdvanceFileLoader(filename);
+    else
+        SimpleFileLoader(filename);
+    
     return orig_hook_LoaderFunc(param1, param2);
 }
 
@@ -153,8 +223,22 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         }
 
         if (LoaderFunction && config::enableMods) {
-            printf("[SigScan Logger] 0x%p : Loader::LoadFile\r\n", LoaderFunction);
-            INSTALL_HOOK(hook_LoaderFunc);
+            char* filepath = new char[0x50];
+            strcpy(filepath, "../");
+            strcat(filepath, config::ModsPath.c_str());
+            DWORD dwAttrib = GetFileAttributesA(filepath);
+
+            if (dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
+                printf("[SigScan Logger] 0x%p : Loader::LoadFile\r\n", LoaderFunction);
+                INSTALL_HOOK(hook_LoaderFunc);
+            }
+            else
+            {
+                config::ModsPath = "plugins";
+                printf("[GE3PluginLog] Failed to find files in Mods directory, defaulting to plugins folder\r\n");
+                printf("[SigScan Logger] 0x%p : Loader::LoadFile\r\n", LoaderFunction);
+                INSTALL_HOOK(hook_LoaderFunc);
+            }
         }
 
         if (SetRandomSeed && config::RemoveRandomSeed) {

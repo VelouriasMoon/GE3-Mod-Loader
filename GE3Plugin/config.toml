@@ -1,5 +1,4 @@
 [General]
-Enable_Console = true	#Enables showing the console
 Enable_Console = true		#Enables showing the console
 Remove_RandomSeed = true	#Removes the Random Seed on functions addresses
 
@@ -9,9 +8,7 @@ Enable_AQLLog = false		#Outputs AQL Log to the console
 Enable_AQLFile = true		#Writes AQL log to a file
 
 [ModLoader]
-Enable_Mods = true		#Enables file redirect to mods folder 
-ModsPath = "mods"		#Mods folder name to redirect too, must be in "GOD EATER 3" with the exe
-DDSLoad = true			#Allows texture ".mds" calls to be redirected to ".dds" files instead
 Enable_Mods = true			#Enables file redirect to mods folder 
 ModsPath = "mods"			#Mods folder name to redirect too, must be in "GOD EATER 3" with the exe
 DDSLoad = true				#Allows texture ".mds" calls to be redirected to ".dds" files instead
+Advanced_Mod_Seeking = true	#Allows mod name subfolders and base game folder searching for redirect calls, may increase load times

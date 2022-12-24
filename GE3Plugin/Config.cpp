@@ -8,6 +8,7 @@ bool config::enableMods;
 bool config::enableDDSLoad;
 std::string config::ModsPath;
 bool config::RemoveRandomSeed;
+bool config::ModSubFolders;
 
 bool config::init()
 {
@@ -37,8 +38,9 @@ bool config::init()
     enableAQLFile = config["AQLLog"]["Enable_AQLFile"].value_or(false);
 
     enableMods = config["ModLoader"]["Enable_Mods"].value_or(false);
-    ModsPath = config["ModLoader"]["ModsPath"].value_or("mods");
+    ModsPath = config["ModLoader"]["ModsPath"].value_or("plugins");
     enableDDSLoad = config["ModLoader"]["DDSLoad"].value_or(false);
+    ModSubFolders = config["ModLoader"]["Advanced_Mod_Seeking"].value_or(true);
 
     return true;
 }

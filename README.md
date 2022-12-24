@@ -13,10 +13,21 @@ The Mod loader contains many options in the config.toml in the plugins folder,
 | Option | type | Info |
 | -------- | ------ | -----|
 | Enable_Console | bool | Enables showing the console |
+| Remove_RandomSeed | bool | Removes the Random Seed on functions addresses |
 | Enable_AQLLog | bool | Outputs AQL Log to the console |
 | Enable_AQLFile | bool | Writes AQL log to a file |
 | Enable_Mods | bool | Enables file redirect to mods folder | 
 | ModsPath | string | Mods folder name to redirect too, must be in "GOD EATER 3" with the exe |
 | DDSLoad | bool | Allows texture ".mds" calls to be redirected to ".dds" files instead |
+| Advanced_Mod_Seeking | bool | Allows mod name subfolders and base game folder searching for redirect calls|
+
+#### Notes about Advanced Mod Seeking:  
+Advanced Mod Seeking Expands the places the plugin will search for replacement files, without it the plugin will only load from the mods folder structured like base game IE: `mods\resource`  
+With Advanced Mod Seeking the plugin will search  
+- `mods\resource`
+- `resource`
+- `mods\mod_name\resource`  
+in that order stopping once it finds a file. Meaning the mods folder has the highest priority, then base game, then named mod sub folders. This may increase load times depending on PC and number of files.
+
 ### Credits
 [DeathChaos25](https://github.com/DeathChaos25) - help setting up detours and toml 
