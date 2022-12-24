@@ -1,5 +1,7 @@
 #pragma once
 
+#include "structs.h"
+
 class config
 {
 public:

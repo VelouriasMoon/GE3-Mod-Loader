@@ -8,6 +8,7 @@
 #include <filesystem>
 #include "Signature.h"
 #include "Config.h"
+#include "structs.h"
 
 void WriteToLog(const std::string& text)
 {

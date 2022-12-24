@@ -146,6 +146,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Signature.h" />
+    <ClInclude Include="structs.h" />
     <ClInclude Include="toml\toml.hpp" />
   </ItemGroup>
   <ItemGroup>
