@@ -6,7 +6,8 @@
 
 ### Installation
 - install the Ultimate ASI Loader dinput8.dll in the "God Eater 3" folder next to the exe
-- extract the Mod loader into the same folder
+- if the plugins folder doesn't exist in your "God Eater 3" make one
+- Add the GE3Plugin.asi and config.toml into your plugins folder
 
 ### Usage
 The Mod loader contains many options in the config.toml in the plugins folder,
